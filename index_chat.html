@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Dodge Game</title>
+
+<style>
+
+body{
+margin:0;
+background:#0f172a;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:sans-serif;
+color:white;
+}
+
+#game{
+position:relative;
+width:400px;
+height:600px;
+background:linear-gradient(#1e293b,#020617);
+overflow:hidden;
+border:3px solid white;
+border-radius:10px;
+}
+
+#player{
+position:absolute;
+bottom:20px;
+left:180px;
+width:40px;
+height:40px;
+background:#22c55e;
+border-radius:6px;
+}
+
+.enemy{
+position:absolute;
+width:40px;
+height:40px;
+background:#ef4444;
+top:-40px;
+border-radius:6px;
+}
+
+#score{
+position:absolute;
+top:10px;
+left:10px;
+font-size:20px;
+}
+
+#menu{
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+button{
+padding:12px 25px;
+font-size:18px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+background:#22c55e;
+color:white;
+}
+
+button:hover{
+background:#16a34a;
+}
+
+</style>
+
+</head>
+<body>
+
+<div id="game">
+
+<div id="score">Score: 0</div>
+
+<div id="player"></div>
+
+<div id="menu">
+<h1>Dodge Game</h1>
+<button onclick="startGame()">เริ่มเกม</button>
+</div>
+
+</div>
+
+<script>
+
+let player = document.getElementById("player")
+let game = document.getElementById("game")
+let scoreText = document.getElementById("score")
+let menu = document.getElementById("menu")
+
+let playerX = 180
+let score = 0
+let gameRunning = false
+
+document.addEventListener("keydown",function(e){
+
+if(!gameRunning) return
+
+if(e.key === "ArrowLeft"){
+playerX -= 20
+}
+
+if(e.key === "ArrowRight"){
+playerX += 20
+}
+
+if(playerX < 0) playerX = 0
+if(playerX > 360) playerX = 360
+
+player.style.left = playerX + "px"
+
+})
+
+function startGame(){
+
+menu.style.display="none"
+
+score = 0
+scoreText.innerText="Score: 0"
+gameRunning = true
+
+spawnLoop = setInterval(spawnEnemy,1000)
+
+}
+
+function gameOver(){
+
+gameRunning=false
+
+clearInterval(spawnLoop)
+
+menu.innerHTML = `
+<h1>Game Over</h1>
+<p>Score: ${score}</p>
+<button onclick="restartGame()">เริ่มใหม่</button>
+`
+
+menu.style.display="flex"
+
+}
+
+function restartGame(){
+
+document.querySelectorAll(".enemy").forEach(e=>e.remove())
+
+playerX = 180
+player.style.left = "180px"
+
+menu.innerHTML=`
+<h1>Dodge Game</h1>
+<button onclick="startGame()">เริ่มเกม</button>
+`
+
+menu.style.display="flex"
+
+}
+
+function spawnEnemy(){
+
+let enemy = document.createElement("div")
+enemy.classList.add("enemy")
+
+enemy.style.left = Math.floor(Math.random()*360)+"px"
+
+game.appendChild(enemy)
+
+let enemyY = -40
+
+let move = setInterval(function(){
+
+if(!gameRunning){
+clearInterval(move)
+enemy.remove()
+return
+}
+
+enemyY += 5
+enemy.style.top = enemyY+"px"
+
+let playerRect = player.getBoundingClientRect()
+let enemyRect = enemy.getBoundingClientRect()
+
+if(
+enemyRect.bottom > playerRect.top &&
+enemyRect.top < playerRect.bottom &&
+enemyRect.left < playerRect.right &&
+enemyRect.right > playerRect.left
+){
+clearInterval(move)
+enemy.remove()
+gameOver()
+}
+
+if(enemyY > 600){
+enemy.remove()
+clearInterval(move)
+score++
+scoreText.innerText="Score: "+score
+}
+
+},20)
+
+}
+
+</script>
+
+</body>
+</html>
